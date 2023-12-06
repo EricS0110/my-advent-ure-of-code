@@ -50,6 +50,8 @@ def parse_input_map(map_input_file: str) -> dict:
     return map_dicts
 
 
+# These are part of the more efficient solution
+# ---------------------------------------------
 @dataclass
 class CategoryMap:
     category_name: str
