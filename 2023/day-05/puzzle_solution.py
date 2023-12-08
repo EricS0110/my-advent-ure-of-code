@@ -161,7 +161,6 @@ def get_location_from_seed_intervals(seed_intervals: list[ValueRange],
     return intervals
 
 
-
 if __name__ == '__main__':
 
     # Define the input file

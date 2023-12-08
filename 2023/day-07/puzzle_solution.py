@@ -35,10 +35,9 @@ def count_original_hands(game_dict: dict) -> dict[int, dict]:
     for key, game_values in game_dict.items():
         this_hand = game_values["original_hand"]
         counts = Counter(this_hand)
-        matches = {count: [] for count in [2, 3, 4, 5]}
+        matches = {count: [] for count in [1, 2, 3, 4, 5]}
         for char, count in counts.items():
-            if count > 1:
-                matches[count].append(char)
+            matches[count].append(char)
         formatted_matches = {k: v for k, v in matches.items() if v}
         game_dict[key]['counts'] = formatted_matches
 
@@ -92,29 +91,34 @@ def label_hand(counts, count_by_keys, current_hand, use_jokers=False):
                     elif 3 in count_by_keys:
                         return "four-of-a-kind"
                     elif 2 in count_by_keys:
-                        return "three-of-a-kind"
+                        if len(counts[2]) == 2:
+                            return "full-house"
+                        else:
+                            return "three-of-a-kind"
                     else:
                         return "one-pair"
 
-    # Common logic for both cases (use_jokers True or False)
-    if len(counts) == 1:
-        if 5 in count_by_keys:
-            return "five-of-a-kind"
-        elif 4 in count_by_keys:
-            return "four-of-a-kind"
-        elif 3 in count_by_keys:
-            return "three-of-a-kind"
-        elif 2 in count_by_keys:
-            # Check the number of pairs for two-pair and one-pair
-            pair_count = len(counts[2])
-            if pair_count > 1:
-                return "two-pair"
-            elif pair_count == 1:
-                return "one-pair"
-    elif len(counts) == 2 and 2 in count_by_keys and 3 in count_by_keys:
-        return "full-house"
+    if 5 in iter(count_by_keys):
+        return "five-of-a-kind"
 
-    return "high-card"
+    elif 4 in iter(count_by_keys):
+        return "four-of-a-kind"
+
+    elif 3 in iter(count_by_keys):
+        if 2 in iter(count_by_keys):
+            return "full-house"
+        else:
+            return "three-of-a-kind"
+
+    elif 2 in iter(count_by_keys):
+        if len(counts[2]) == 2:
+            return "two-pair"
+        else:
+            return "one-pair"
+    elif len(counts[1]) == 5:
+        return "high-card"
+    else:
+        return "unknown condition"
 
 
 def group_results(game_dict: dict, use_jokers=False) -> dict[str, dict]:
@@ -130,6 +134,7 @@ def group_results(game_dict: dict, use_jokers=False) -> dict[str, dict]:
         this_hand = {key: game}
         count_keys = game['counts'].keys()
         hand_label = label_hand(game['counts'], count_keys, this_hand, use_jokers=use_jokers)
+        this_hand[key]['label'] = hand_label
         match hand_label:
             case "five-of-a-kind":
                 five_of_a_kind[key] = this_hand
@@ -228,7 +233,8 @@ if __name__ == '__main__':
 
     # Part 2 solution
     #   A result of 252956851 is too high, need to debug further -> forgot to rework ranking to use Jokers
-    #   A result of 252663288 is still too high, need to debug further -> ?????
+    #   A result of 252663288 is still too high, need to debug further -> Need to properly handle all combos of 5 cards
+    #   A result of 250038296 is only labeled as "incorrect"
+    #   A result of 249609671 is only labeled as "incorrect"
     joker_game_winnings = calculate_game_winnings(joker_games_by_rank)
     print(joker_game_winnings)
-
